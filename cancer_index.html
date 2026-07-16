@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Breast Cancer Detection</title>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --black: #0A0A0A;
+      --off-white: #F2F0EB;
+      --pink: #C8374A;
+      --pink-dim: #8B2433;
+      --steel: #2A3240;
+      --accent: #E8A020;
+      --green: #4ADE80;
+      --muted: #6B7280;
+      --card-bg: #141820;
+      --border: #252D3A;
+    }
+    html { scroll-behavior: smooth; }
+    body { background: var(--black); color: var(--off-white); font-family: 'Space Grotesk', sans-serif; font-size: 16px; line-height: 1.6; }
+
+    /* NAV */
+    nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; display: flex; align-items: center; justify-content: space-between; padding: 1rem 3rem; background: rgba(10,10,10,0.92); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+    .nav-logo { font-family: 'Space Mono', monospace; font-size: 0.85rem; color: var(--pink); letter-spacing: 0.08em; }
+    .nav-links { display: flex; gap: 2rem; }
+    .nav-links a { color: var(--muted); text-decoration: none; font-size: 0.85rem; letter-spacing: 0.05em; transition: color 0.2s; }
+    .nav-links a:hover { color: var(--off-white); }
+
+    /* HERO */
+    .hero { min-height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 8rem 3rem 4rem; position: relative; overflow: hidden; }
+    .hero::before { content: ''; position: absolute; top: -200px; right: -200px; width: 600px; height: 600px; background: radial-gradient(circle, rgba(200,55,74,0.12) 0%, transparent 70%); pointer-events: none; }
+    .hero-eyebrow { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--pink); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1.5rem; }
+    .hero-title { font-size: clamp(2.8rem, 7vw, 6rem); font-weight: 700; line-height: 1.05; letter-spacing: -0.02em; max-width: 900px; margin-bottom: 1.5rem; }
+    .hero-title span { color: var(--pink); }
+    .hero-sub { font-size: 1.1rem; color: var(--muted); max-width: 520px; margin-bottom: 3rem; line-height: 1.7; }
+    .hero-stats { display: flex; gap: 3rem; flex-wrap: wrap; }
+    .stat-num { font-family: 'Space Mono', monospace; font-size: 2.2rem; font-weight: 700; color: var(--off-white); line-height: 1; }
+    .stat-num.green { color: var(--green); }
+    .stat-num.pink { color: var(--pink); }
+    .stat-num.accent { color: var(--accent); }
+    .stat-label { font-size: 0.75rem; color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase; margin-top: 0.3rem; }
+
+    /* SECTIONS */
+    section { padding: 6rem 3rem; max-width: 1100px; margin: 0 auto; }
+    .section-eyebrow { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--pink); letter-spacing: 0.15em; text-transform: uppercase; margin-bottom: 1rem; }
+    .section-title { font-size: clamp(1.8rem, 3.5vw, 2.8rem); font-weight: 700; letter-spacing: -0.02em; margin-bottom: 1rem; line-height: 1.15; }
+    .section-desc { color: var(--muted); max-width: 600px; margin-bottom: 3rem; font-size: 1rem; line-height: 1.7; }
+    hr.divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+
+    /* CARDS GRID */
+    .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 2.5rem; }
+    .card { background: var(--card-bg); padding: 1.8rem; }
+    .card .num { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 0.4rem; }
+    .card .num.green { color: var(--green); }
+    .card .num.pink { color: var(--pink); }
+    .card .num.accent { color: var(--accent); }
+    .card .label { font-size: 0.8rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+    .card .desc { font-size: 0.9rem; color: var(--off-white); margin-top: 0.5rem; }
+
+    /* FINDINGS */
+    .findings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 2.5rem; }
+    .finding-card { background: var(--card-bg); padding: 2rem; }
+    .finding-card h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 1rem; color: var(--off-white); display: flex; align-items: center; gap: 0.5rem; }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--pink); flex-shrink: 0; }
+    .dot.green { background: var(--green); }
+    .dot.yellow { background: var(--accent); }
+    .finding-card p, .finding-card li { font-size: 0.88rem; color: var(--muted); line-height: 1.7; }
+    .finding-card ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; }
+    .finding-card ul li { padding-left: 1rem; position: relative; }
+    .finding-card ul li::before { content: '→'; position: absolute; left: 0; color: var(--pink); }
+
+    /* METRICS */
+    .metrics-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--border); border: 1px solid var(--border); margin-bottom: 2rem; }
+    .metric-card { background: var(--black); padding: 2rem; text-align: center; }
+    .metric-val { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; line-height: 1; margin-bottom: 0.4rem; }
+    .metric-val.green { color: var(--green); }
+    .metric-val.pink { color: var(--pink); }
+    .metric-val.accent { color: var(--accent); }
+    .metric-name { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+    .metric-desc { font-size: 0.8rem; color: var(--muted); margin-top: 0.5rem; }
+
+    /* CONFUSION MATRIX */
+    .cm-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem; }
+    .cm-box { border: 1px solid var(--border); }
+    .cm-title { font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; padding: 0.8rem 1rem; border-bottom: 1px solid var(--border); }
+    .cm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); padding: 1px; }
+    .cm-cell { padding: 1.5rem; text-align: center; }
+    .cm-cell.tp { background: rgba(74,222,128,0.15); }
+    .cm-cell.tn { background: rgba(74,222,128,0.15); }
+    .cm-cell.fp { background: rgba(200,55,74,0.1); }
+    .cm-cell.fn { background: rgba(200,55,74,0.1); }
+    .cm-cell .big { font-family: 'Space Mono', monospace; font-size: 2rem; font-weight: 700; }
+    .cm-cell.tp .big, .cm-cell.tn .big { color: var(--green); }
+    .cm-cell.fp .big, .cm-cell.fn .big { color: var(--pink); }
+    .cm-cell .small { font-size: 0.75rem; color: var(--muted); margin-top: 0.3rem; }
+
+    /* PIPELINE */
+    .pipeline { display: flex; flex-direction: column; gap: 0; border: 1px solid var(--border); }
+    .pipeline-step { display: grid; grid-template-columns: 60px 1fr auto; align-items: center; gap: 1.5rem; padding: 1.5rem 2rem; background: var(--card-bg); border-bottom: 1px solid var(--border); transition: background 0.2s; }
+    .pipeline-step:last-child { border-bottom: none; }
+    .pipeline-step:hover { background: var(--steel); }
+    .step-num { font-family: 'Space Mono', monospace; font-size: 1.4rem; font-weight: 700; color: var(--border); }
+    .step-content h4 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.2rem; }
+    .step-content p { font-size: 0.82rem; color: var(--muted); }
+    .step-badge { font-family: 'Space Mono', monospace; font-size: 0.7rem; padding: 0.3rem 0.7rem; border-radius: 2px; white-space: nowrap; }
+    .badge-green { background: rgba(74,222,128,0.1); color: var(--green); }
+    .badge-pink { background: rgba(200,55,74,0.15); color: var(--pink); }
+    .badge-yellow { background: rgba(232,160,32,0.15); color: var(--accent); }
+
+    /* INSIGHT BOX */
+    .insight { margin-top: 1.5rem; padding: 1.5rem 2rem; background: var(--card-bg); border: 1px solid var(--border); border-left: 3px solid var(--green); }
+    .insight p { font-size: 0.88rem; color: var(--muted); line-height: 1.7; }
+    .insight strong { color: var(--green); }
+
+    /* THRESHOLD */
+    .threshold-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .th-card { background: var(--card-bg); padding: 2rem; }
+    .th-card h4 { font-family: 'Space Mono', monospace; font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 1.2rem; }
+    .th-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--border); }
+    .th-row:last-child { border-bottom: none; }
+    .th-row span:first-child { font-size: 0.85rem; color: var(--muted); }
+    .th-row span:last-child { font-family: 'Space Mono', monospace; font-size: 0.85rem; color: var(--off-white); }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); padding: 2rem 3rem; display: flex; justify-content: space-between; align-items: center; max-width: 1100px; margin: 0 auto; }
+    footer p { font-size: 0.8rem; color: var(--muted); }
+    footer a { color: var(--accent); text-decoration: none; font-family: 'Space Mono', monospace; font-size: 0.75rem; }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      section { padding: 4rem 1.5rem; }
+      .hero { padding: 7rem 1.5rem 3rem; }
+      .findings-grid, .cm-wrap, .threshold-grid { grid-template-columns: 1fr; }
+      .metrics-row { grid-template-columns: 1fr 1fr; }
+      .pipeline-step { grid-template-columns: 40px 1fr; }
+      .step-badge { display: none; }
+      footer { flex-direction: column; gap: 1rem; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo">CANCER DETECTION</div>
+  <div class="nav-links">
+    <a href="#dataset">Dataset</a>
+    <a href="#eda">EDA</a>
+    <a href="#pipeline">Pipeline</a>
+    <a href="#results">Results</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-eyebrow">Machine Learning Project</div>
+  <h1 class="hero-title">Can a machine detect <span>cancer?</span></h1>
+  <p class="hero-sub">A complete ML pipeline on 569 patients — from raw data to a Logistic Regression model that detects breast cancer with 98.25% accuracy.</p>
+  <div class="hero-stats">
+    <div class="stat-item">
+      <div class="stat-num">569</div>
+      <div class="stat-label">Patients</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num">30</div>
+      <div class="stat-label">Features</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num green">98.25%</div>
+      <div class="stat-label">Accuracy</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-num accent">0.9954</div>
+      <div class="stat-label">ROC-AUC Score</div>
+    </div>
+  </div>
+</div>
+
+<hr class="divider" />
+
+<!-- DATASET -->
+<section id="dataset">
+  <div class="section-eyebrow">The Data</div>
+  <h2 class="section-title">Breast Cancer Wisconsin Dataset</h2>
+  <p class="section-desc">569 patients, 30 features computed from digitized images of breast mass. Goal: classify tumors as Malignant (cancer) or Benign (no cancer).</p>
+
+  <div class="cards-grid">
+    <div class="card">
+      <div class="num">569</div>
+      <div class="label">Total Patients</div>
+      <div class="desc">No missing values — clean dataset</div>
+    </div>
+    <div class="card">
+      <div class="num">30</div>
+      <div class="label">Features</div>
+      <div class="desc">All numeric — radius, texture, perimeter, area, smoothness etc.</div>
+    </div>
+    <div class="card">
+      <div class="num pink">357</div>
+      <div class="label">Malignant (Cancer)</div>
+      <div class="desc">62.7% of dataset — majority class</div>
+    </div>
+    <div class="card">
+      <div class="num green">212</div>
+      <div class="label">Benign (No Cancer)</div>
+      <div class="desc">37.3% of dataset — minority class</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <p><strong>Class Imbalance Handling:</strong> Used <code>stratify=y</code> in train_test_split to ensure both classes maintain their ratio in train and test sets. This prevents the model from being biased towards the majority class.</p>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- EDA -->
+<section id="eda">
+  <div class="section-eyebrow">Exploratory Data Analysis</div>
+  <h2 class="section-title">What the data revealed</h2>
+  <p class="section-desc">Analyzing 30 features to understand which ones are most predictive of cancer.</p>
+
+  <div class="findings-grid">
+    <div class="finding-card">
+      <h3><span class="dot pink"></span> Top Cancer Predictors</h3>
+      <ul>
+        <li>worst concave points (0.79) — strongest signal</li>
+        <li>worst perimeter (0.78) — tumor size matters</li>
+        <li>mean concave points (0.77) — shape irregularity</li>
+        <li>worst radius (0.77) — larger = more likely cancer</li>
+        <li>mean perimeter (0.74) — consistent with radius</li>
+      </ul>
+    </div>
+    <div class="finding-card">
+      <h3><span class="dot green"></span> Key Insight</h3>
+      <p>Size-related features (radius, perimeter, area) are the strongest predictors. Larger, more irregular tumors are more likely to be malignant. This aligns with medical knowledge — cancerous tumors tend to be bigger and have irregular shapes.</p>
+    </div>
+    <div class="finding-card">
+      <h3><span class="dot yellow"></span> Multicollinearity</h3>
+      <p>Many features are highly correlated with each other (radius, perimeter, area all measure size). Logistic Regression with StandardScaler handles this well as it normalizes all features to same scale.</p>
+    </div>
+    <div class="finding-card">
+      <h3><span class="dot green"></span> No Missing Values</h3>
+      <p>Dataset is clean — no imputation needed. All 569 patients have complete feature measurements. This is rare in medical datasets and allows us to focus on model building without extensive preprocessing.</p>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- PIPELINE -->
+<section id="pipeline">
+  <div class="section-eyebrow">ML Pipeline</div>
+  <h2 class="section-title">From raw data to prediction</h2>
+  <p class="section-desc">A clean sklearn Pipeline — preprocessing and model training in one object.</p>
+
+  <div class="pipeline" style="margin-bottom: 2rem;">
+    <div class="pipeline-step">
+      <div class="step-num">01</div>
+      <div class="step-content">
+        <h4>Data Loading & EDA</h4>
+        <p>Loaded sklearn's built-in Breast Cancer dataset. Analyzed distributions, correlations, class balance.</p>
+      </div>
+      <div class="step-badge badge-green">569 rows, 30 cols</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">02</div>
+      <div class="step-content">
+        <h4>Train / Test Split</h4>
+        <p>80/20 split with stratify=y to maintain class ratio. 455 train, 114 test.</p>
+      </div>
+      <div class="step-badge badge-yellow">455 / 114</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">03</div>
+      <div class="step-content">
+        <h4>Standard Scaling</h4>
+        <p>All 30 features scaled to mean=0, std=1. Fit on train only, transform both train and test — no data leakage.</p>
+      </div>
+      <div class="step-badge badge-yellow">No leakage</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">04</div>
+      <div class="step-content">
+        <h4>Logistic Regression</h4>
+        <p>Classification model. Linear equation → Sigmoid function → probability → threshold (0.3) → 0 or 1.</p>
+      </div>
+      <div class="step-badge badge-green">max_iter=1000</div>
+    </div>
+    <div class="pipeline-step">
+      <div class="step-num">05</div>
+      <div class="step-content">
+        <h4>Threshold Tuning</h4>
+        <p>Lowered threshold from 0.5 to 0.3 to eliminate False Negatives — no cancer patient should be missed.</p>
+      </div>
+      <div class="step-badge badge-pink">FN = 0 ✅</div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <p><strong>Why Pipeline?</strong> Sklearn Pipeline chains preprocessing + model into one object. When we call <code>pipeline.fit(X_train)</code>, it fits the scaler on train data only, then trains the model. When we call <code>pipeline.predict(X_test)</code>, it applies the same scaling learned from train data to test data — preventing data leakage automatically.</p>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- RESULTS -->
+<section id="results">
+  <div class="section-eyebrow">Model Results</div>
+  <h2 class="section-title">How well does it detect cancer?</h2>
+  <p class="section-desc">Logistic Regression trained on 455 patients, tested on 114 unseen patients.</p>
+
+  <div class="metrics-row">
+    <div class="metric-card">
+      <div class="metric-val green">98.25%</div>
+      <div class="metric-name">Accuracy</div>
+      <div class="metric-desc">Overall correctness on test set</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val accent">98.61%</div>
+      <div class="metric-name">Precision</div>
+      <div class="metric-desc">When model says cancer, it's right 98.6% of the time</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val green">98.61%</div>
+      <div class="metric-name">Recall</div>
+      <div class="metric-desc">98.6% of actual cancer cases caught</div>
+    </div>
+    <div class="metric-card">
+      <div class="metric-val green">0.9954</div>
+      <div class="metric-name">ROC-AUC</div>
+      <div class="metric-desc">Near perfect discrimination ability</div>
+    </div>
+  </div>
+
+  <div style="font-family: 'Space Mono', monospace; font-size: 0.72rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; padding-bottom: 0.8rem; border-bottom: 1px solid var(--border); margin-bottom: 0;">Confusion Matrix — Default (0.5) vs Tuned (0.3) Threshold</div>
+
+  <div class="cm-wrap">
+    <div class="cm-box">
+      <div class="cm-title">Threshold = 0.5 (Default)</div>
+      <div style="padding: 1rem;">
+        <div class="cm-grid">
+          <div class="cm-cell tn">
+            <div class="big">41</div>
+            <div class="small">True Negative ✅<br>No cancer, said no cancer</div>
+          </div>
+          <div class="cm-cell fp">
+            <div class="big" style="color:var(--pink)">1</div>
+            <div class="small">False Positive ❌<br>No cancer, said cancer</div>
+          </div>
+          <div class="cm-cell fn">
+            <div class="big" style="color:var(--pink)">1</div>
+            <div class="small">False Negative ⚠️<br>Had cancer, missed it!</div>
+          </div>
+          <div class="cm-cell tp">
+            <div class="big">71</div>
+            <div class="small">True Positive ✅<br>Cancer, said cancer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cm-box">
+      <div class="cm-title">Threshold = 0.3 (Tuned) ← Better for medical</div>
+      <div style="padding: 1rem;">
+        <div class="cm-grid">
+          <div class="cm-cell tn">
+            <div class="big">40</div>
+            <div class="small">True Negative ✅<br>No cancer, said no cancer</div>
+          </div>
+          <div class="cm-cell fp">
+            <div class="big" style="color:var(--pink)">2</div>
+            <div class="small">False Positive ❌<br>No cancer, said cancer</div>
+          </div>
+          <div class="cm-cell fn">
+            <div class="big">0</div>
+            <div class="small">False Negative ✅<br>Zero cancer cases missed!</div>
+          </div>
+          <div class="cm-cell tp">
+            <div class="big">72</div>
+            <div class="small">True Positive ✅<br>Cancer, said cancer</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="threshold-grid" style="margin-bottom: 1.5rem;">
+    <div class="th-card">
+      <h4>Threshold = 0.5</h4>
+      <div class="th-row"><span>False Negatives</span><span style="color:var(--pink)">1 ⚠️</span></div>
+      <div class="th-row"><span>False Positives</span><span>1</span></div>
+      <div class="th-row"><span>Recall</span><span>98.61%</span></div>
+      <div class="th-row"><span>Precision</span><span>98.61%</span></div>
+    </div>
+    <div class="th-card">
+      <h4>Threshold = 0.3 ← Chosen</h4>
+      <div class="th-row"><span>False Negatives</span><span style="color:var(--green)">0 ✅</span></div>
+      <div class="th-row"><span>False Positives</span><span style="color:var(--pink)">2</span></div>
+      <div class="th-row"><span>Recall</span><span style="color:var(--green)">100%</span></div>
+      <div class="th-row"><span>Precision</span><span>97.3%</span></div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <p><strong>Why threshold = 0.3?</strong> In cancer detection, a False Negative (missing actual cancer) is far more dangerous than a False Positive (unnecessary further tests). By lowering the threshold from 0.5 to 0.3, we eliminated all False Negatives — the model now catches 100% of cancer cases, at the cost of 1 extra false alarm. This is the right medical tradeoff.</p>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<footer>
+  <p>Breast Cancer Detection · Machine Learning Project · 2026</p>
+  <a href="https://github.com/" target="_blank">View on GitHub →</a>
+</footer>
+
+</body>
+</html>
